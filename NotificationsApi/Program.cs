@@ -1,5 +1,6 @@
 using Infrastructure.Repository;
 using Microsoft.EntityFrameworkCore;
+using NotificationsApi.Service;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -7,7 +8,7 @@ var builder = WebApplication.CreateBuilder(args);
 var configuration = new ConfigurationBuilder()
     .AddJsonFile("appsettings.json").Build();
 
-var connectionString = configuration.GetConnectionString("ConnectionString");
+var connectionString = configuration.GetConnectionString("DefaultConnection");
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -25,6 +26,8 @@ var app = builder.Build();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
+    app.ApplyMigrations();
+    
     app.UseSwagger();
     app.UseSwaggerUI();
 }

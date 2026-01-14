@@ -1,0 +1,60 @@
+﻿services:
+  #Banco de Dados Sql Server
+  notification-db:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: notification_db_sql_server
+    platform: linux/amd64
+    user: root
+    environment:
+      ACCEPT_EULA: Y
+      SA_PASSWORD: rooot1234!!
+      MSSQL_PID: Developer
+    ports:
+      - "1435:1433" 
+    volumes:
+      - notification_sql_data:/var/opt/mssql/data
+    networks:
+      - microsservicos-net
+    healthcheck:
+      test: >
+        /opt/mssql-tools18/bin/sqlcmd
+        -S localhost
+        -U sa
+        -P "rooot1234!!"
+        -C
+        -Q "SELECT 1"
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  notification-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: notifications_api_container
+    restart: on-failure
+    ports:
+      - "5100:8080" 
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__DefaultConnection: >
+        Server=notification-db;
+        Database=Db.Notifications;
+        User Id=sa;
+        Password=rooot1234!!;
+        TrustServerCertificate=True;
+      Jwt__Key: IkV6/I+/6WtC4xTRDjLMdwWl0jkt6UAU2R0NUwsL7fI=
+    depends_on:
+      notification-db:
+        condition: service_healthy
+    networks:
+      - microsservicos-net
+
+volumes:
+  notification_sql_data:
+
+networks:
+  microsservicos-net:
+    #external: true
+    name: app-network
+    driver: bridge
