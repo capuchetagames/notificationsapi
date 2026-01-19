@@ -12,6 +12,31 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Core", "Core\Core.csproj", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Infrastructure", "Infrastructure\Infrastructure.csproj", "{49FF87C1-ACA8-4942-A23E-E274F4457305}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docker", "docker", "{0ABC0B04-B759-4D34-A2F5-A97EC0273810}"
+	ProjectSection(SolutionItems) = preProject
+		docker-compose.yaml = docker-compose.yaml
+		Dockerfile = Dockerfile
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "k8s", "k8s", "{1ECC4A09-A5BB-4429-B925-C53F99F151D6}"
+	ProjectSection(SolutionItems) = preProject
+		k8s\env.sh = k8s\env.sh
+		k8s\k8s-delete-all.sh = k8s\k8s-delete-all.sh
+		k8s\k8s-deploy-api.sh = k8s\k8s-deploy-api.sh
+		k8s\k8s-deploy-db.sh = k8s\k8s-deploy-db.sh
+		k8s\k8s-dev-api.sh = k8s\k8s-dev-api.sh
+		k8s\k8s-start-all-deploy.sh = k8s\k8s-start-all-deploy.sh
+		k8s\k8s-start-all-dev.sh = k8s\k8s-start-all-dev.sh
+		k8s\notifications-api-configmap.yaml = k8s\notifications-api-configmap.yaml
+		k8s\notifications-deployment.yaml = k8s\notifications-deployment.yaml
+		k8s\notifications-pod.yaml = k8s\notifications-pod.yaml
+		k8s\notifications-secret.yaml = k8s\notifications-secret.yaml
+		k8s\notifications-service.yaml = k8s\notifications-service.yaml
+		k8s\sql-configmap.yaml = k8s\sql-configmap.yaml
+		k8s\sql-deployment.yaml = k8s\sql-deployment.yaml
+		k8s\sql-service.yaml = k8s\sql-service.yaml
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

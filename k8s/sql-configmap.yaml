@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: notifications-db-config
+data:
+  ACCEPT_EULA: "Y"
+  MSSQL_PID: "Developer"
