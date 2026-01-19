@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: notification-db
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: notification-db
+  template:
+    metadata:
+      labels:
+        app: notification-db
+    spec:
+      containers:
+        - name: notification-db
+          image: mcr.microsoft.com/mssql/server:2022-latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 1435
+          env:
+            
+            - name: ACCEPT_EULA
+              valueFrom:
+                configMapKeyRef:
+                  name: notifications-db-config
+                  key: ACCEPT_EULA
+            
+            - name: SA_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: notifications-secret
+                  key: DB_PASSWORD
