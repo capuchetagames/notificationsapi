@@ -17,6 +17,6 @@ public class NotificationsConfiguration : IEntityTypeConfiguration<Notifications
         builder.Property(x => x.Type).HasColumnType("VARCHAR(100)").IsRequired();
         builder.Property(x => x.Status).HasColumnType("VARCHAR(100)").IsRequired();
         builder.Property(x=> x.CreatedAt).HasColumnType("DATETIME").IsRequired();
-        builder.Property(x=> x.DeliveredAt).HasColumnType("DATETIME").IsRequired();
+        builder.Property(x=> x.DeliveredAt).HasColumnType("DATETIME");
     }
 }
