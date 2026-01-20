@@ -3,7 +3,7 @@ kind: ConfigMap
 metadata:
   name: notifications-config
 data:
-  DB_HOST: "notification-db"
+  DB_HOST: "notifications-db"
   DB_NAME: "Db.Notifications"
   ASPNETCORE_ENVIRONMENT: "Development"
   ACCEPT_EULA: "Y"
