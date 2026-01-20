@@ -1,4 +1,5 @@
 using Core.Models;
+using Core.Repository;
 using Infrastructure.Repository;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
@@ -25,7 +26,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 
 builder.Services.AddHealthChecks();
 
-
+builder.Services.AddScoped<INotificationsRepository, NotificationsRepository>();
 
 builder.Services.Configure<RabbitMqSettings>(
     builder.Configuration.GetSection("RabbitMq"));

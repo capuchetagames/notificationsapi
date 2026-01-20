@@ -8,13 +8,12 @@ namespace NotificationsApi.Service;
 
 public class UserEventsConsumer : BackgroundService
 {
-    private readonly INotificationsRepository _notificationsRepository;
+    private readonly IServiceScopeFactory _scopeFactory;
     private readonly IRabbitMqConsumer _consumer;
 
-    public UserEventsConsumer(IRabbitMqConsumer consumer, INotificationsRepository notificationsRepository)
+    public UserEventsConsumer(IRabbitMqConsumer consumer)
     {
         _consumer = consumer;
-        _notificationsRepository = notificationsRepository;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -37,12 +36,19 @@ public class UserEventsConsumer : BackgroundService
             Message = "Mensagem de Boas Vindas!",
             Subject = "Boas Vindas!",
             Type = "Email",
-            Status = "Sent"
+            Status = "Sent",
+            DeliveredAt = DateTime.Now
         };
         
-        _notificationsRepository.Add(notificationMessage);
+        Console.WriteLine($"📧 Welcome email para >> {userCreatedEvent.UserId} | {userCreatedEvent.Name} | {userCreatedEvent.Email}");
 
-        Console.WriteLine($"📧 Welcome email para {userCreatedEvent.Name} | {userCreatedEvent.Email}");
+        using var scope = _scopeFactory.CreateScope();
+
+        var repo = scope.ServiceProvider
+            .GetRequiredService<INotificationsRepository>();
+        
+            repo.Add(notificationMessage);
+
         
         return Task.CompletedTask;
     }
