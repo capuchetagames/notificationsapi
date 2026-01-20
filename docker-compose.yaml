@@ -1,8 +1,8 @@
 ﻿services:
   #Banco de Dados Sql Server
-  notification-db:
+  notifications-db:
     image: mcr.microsoft.com/mssql/server:2022-latest
-    container_name: notification_db_sql_server
+    container_name: notifications_db_sql_server
     platform: linux/amd64
     user: root
     environment:
@@ -12,7 +12,7 @@
     ports:
       - "1435:1433" 
     volumes:
-      - notification_sql_data:/var/opt/mssql/data
+      - notifications_sql_data:/var/opt/mssql/data
     networks:
       - microsservicos-net
     healthcheck:
@@ -27,7 +27,7 @@
       timeout: 5s
       retries: 10
 
-  notification-api:
+  notifications-api:
     build:
       context: .
       dockerfile: Dockerfile
@@ -38,20 +38,20 @@
     environment:
       ASPNETCORE_ENVIRONMENT: Development
       ConnectionStrings__DefaultConnection: >
-        Server=notification-db;
+        Server=notifications-db;
         Database=Db.Notifications;
         User Id=sa;
         Password=rooot1234!!;
         TrustServerCertificate=True;
       Jwt__Key: IkV6/I+/6WtC4xTRDjLMdwWl0jkt6UAU2R0NUwsL7fI=
     depends_on:
-      notification-db:
+      notifications-db:
         condition: service_healthy
     networks:
       - microsservicos-net
 
 volumes:
-  notification_sql_data:
+  notifications_sql_data:
 
 networks:
   microsservicos-net:

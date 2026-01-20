@@ -1,19 +1,19 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: notification-db
+  name: notifications-db
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: notification-db
+      app: notifications-db
   template:
     metadata:
       labels:
-        app: notification-db
+        app: notifications-db
     spec:
       containers:
-        - name: notification-db
+        - name: notifications-db
           image: mcr.microsoft.com/mssql/server:2022-latest
           imagePullPolicy: IfNotPresent
           ports:
