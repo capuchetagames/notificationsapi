@@ -27,14 +27,13 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "k8s", "k8s", "{1ECC4A09-A5B
 		k8s\k8s-dev-api.sh = k8s\k8s-dev-api.sh
 		k8s\k8s-start-all-deploy.sh = k8s\k8s-start-all-deploy.sh
 		k8s\k8s-start-all-dev.sh = k8s\k8s-start-all-dev.sh
-		k8s\notifications-api-configmap.yaml = k8s\notifications-api-configmap.yaml
 		k8s\notifications-deployment.yaml = k8s\notifications-deployment.yaml
 		k8s\notifications-pod.yaml = k8s\notifications-pod.yaml
 		k8s\notifications-secret.yaml = k8s\notifications-secret.yaml
 		k8s\notifications-service.yaml = k8s\notifications-service.yaml
-		k8s\sql-configmap.yaml = k8s\sql-configmap.yaml
 		k8s\sql-deployment.yaml = k8s\sql-deployment.yaml
 		k8s\sql-service.yaml = k8s\sql-service.yaml
+		k8s\notifications-configmap.yaml = k8s\notifications-configmap.yaml
 	EndProjectSection
 EndProject
 Global

@@ -23,7 +23,7 @@ spec:
             - name: ACCEPT_EULA
               valueFrom:
                 configMapKeyRef:
-                  name: notifications-db-config
+                  name: notifications-config
                   key: ACCEPT_EULA
             
             - name: SA_PASSWORD
