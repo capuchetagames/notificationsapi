@@ -7,4 +7,5 @@ namespace NotificationsApi.Controllers;
 public class NotificationsController : ControllerBase
 {
     
+    
 }

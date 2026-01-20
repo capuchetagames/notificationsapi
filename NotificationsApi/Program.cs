@@ -1,12 +1,15 @@
+using Core.Models;
 using Infrastructure.Repository;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
+using NotificationsApi.Configs;
 using NotificationsApi.Service;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 var configuration = new ConfigurationBuilder()
-    .AddJsonFile("appsettings.json").Build();
+    .AddJsonFile("appsettings.Development.json").Build();
 
 var connectionString = configuration.GetConnectionString("DefaultConnection");
 
@@ -21,6 +24,21 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 }, ServiceLifetime.Scoped);
 
 builder.Services.AddHealthChecks();
+
+
+
+builder.Services.Configure<RabbitMqSettings>(
+    builder.Configuration.GetSection("RabbitMq"));
+
+builder.Services.AddSingleton<IRabbitMqConsumer>(sp =>
+{
+    var settings = sp.GetRequiredService<IOptions<RabbitMqSettings>>().Value;
+    return new RabbitMqConsumer(settings);
+});
+
+builder.Services.AddHostedService<UserEventsConsumer>();
+builder.Services.AddHostedService<PaymentEventsConsumer>();
+
 
 var app = builder.Build();
 
@@ -37,6 +55,8 @@ if (app.Environment.IsDevelopment())
         c.DocumentTitle = "REDOC API Documentation";
         c.SpecUrl = "/swagger/v1/swagger.json";
     });
+    
+    
 }
 
 //app.UseHttpsRedirection();
