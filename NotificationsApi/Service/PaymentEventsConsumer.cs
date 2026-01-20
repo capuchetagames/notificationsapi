@@ -8,13 +8,11 @@ namespace NotificationsApi.Service;
 public class PaymentEventsConsumer : BackgroundService
 {
     private readonly IRabbitMqConsumer _consumer;
-    
-    private readonly INotificationsRepository _notificationsRepository;
+    private readonly IServiceScopeFactory _scopeFactory;
 
-    public PaymentEventsConsumer(IRabbitMqConsumer consumer, INotificationsRepository notificationsRepository)
+    public PaymentEventsConsumer(IRabbitMqConsumer consumer)
     {
         _consumer = consumer;
-        _notificationsRepository = notificationsRepository;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -40,8 +38,14 @@ public class PaymentEventsConsumer : BackgroundService
             Type = "Email",
             Status = "Sent"
         };
+
+        using var scope = _scopeFactory.CreateScope();
+
+        var repo = scope.ServiceProvider
+            .GetRequiredService<INotificationsRepository>();
+
+            repo.Add(notificationMessage);
         
-        _notificationsRepository.Add(notificationMessage);
 
         Console.WriteLine($"💳 Mensagem de Status da Compra : {paymentProcessedEvent.Status} | {paymentProcessedEvent.Name} | {paymentProcessedEvent.Email}");
         
