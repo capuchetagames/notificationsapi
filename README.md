@@ -102,6 +102,11 @@ Update `appsettings.json` with your configuration:
 }
 ```
 
+**Note**: 
+- For local SQL Server: Use `Server=localhost,1435` (assuming Docker Compose port mapping)
+- For SQL Server in same Docker network: Use `Server=notifications-db` (as done in docker-compose.yaml)
+- **RabbitMQ is not included in docker-compose.yaml** - you need to have it running externally or add it to the compose file
+
 ### Environment Variables
 
 For Docker deployments, configure these environment variables:
@@ -125,6 +130,11 @@ docker-compose up -d
 This will start:
 - SQL Server on port `1435`
 - Notifications API on port `5100`
+
+**Important**: The docker-compose.yaml does not include RabbitMQ. You need to either:
+- Have RabbitMQ running externally and update the `RabbitMq` settings in appsettings.json
+- Add RabbitMQ to the docker-compose.yaml file
+- Use a cloud-hosted RabbitMQ instance
 
 The API will be available at: `http://localhost:5100`
 
@@ -192,10 +202,10 @@ notificationsapi/
 - **Framework**: .NET 8.0
 - **Language**: C# 12
 - **Database**: SQL Server 2022
-- **ORM**: Entity Framework Core 8.0
+- **ORM**: Entity Framework Core 8.0.22
 - **Message Broker**: RabbitMQ 7.2
 - **API Documentation**: Swagger/OpenAPI
-- **Validation**: FluentValidation
+- **Validation**: FluentValidation 12.1.1
 - **Containerization**: Docker
 - **Orchestration**: Kubernetes
 
