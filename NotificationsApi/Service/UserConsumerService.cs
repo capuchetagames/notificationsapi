@@ -11,9 +11,10 @@ public class UserEventsConsumer : BackgroundService
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly IRabbitMqConsumer _consumer;
 
-    public UserEventsConsumer(IRabbitMqConsumer consumer)
+    public UserEventsConsumer(IRabbitMqConsumer consumer, IServiceScopeFactory scopeFactory)
     {
         _consumer = consumer;
+        _scopeFactory = scopeFactory;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)

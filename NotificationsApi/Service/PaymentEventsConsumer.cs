@@ -10,9 +10,10 @@ public class PaymentEventsConsumer : BackgroundService
     private readonly IRabbitMqConsumer _consumer;
     private readonly IServiceScopeFactory _scopeFactory;
 
-    public PaymentEventsConsumer(IRabbitMqConsumer consumer)
+    public PaymentEventsConsumer(IRabbitMqConsumer consumer, IServiceScopeFactory scopeFactory)
     {
         _consumer = consumer;
+        _scopeFactory = scopeFactory;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -20,7 +21,7 @@ public class PaymentEventsConsumer : BackgroundService
         await _consumer.ConsumeAsync<PaymentProcessedEvent>(
             exchange: "payments.events",
             queue: "notifications.payments",
-            routingKey: "payment.*",
+            routingKey: "payment.approved",
             handler: Handle,
             cancellationToken: stoppingToken
         );
@@ -30,6 +31,8 @@ public class PaymentEventsConsumer : BackgroundService
 
     private Task Handle(PaymentProcessedEvent paymentProcessedEvent)
     {
+        Console.WriteLine($"💳 Mensagem de Status da Compra : {paymentProcessedEvent.Status} | {paymentProcessedEvent.Name} | {paymentProcessedEvent.Email}");
+        
         var notificationMessage = new Notifications()
         {
             UserId = paymentProcessedEvent.UserId,
