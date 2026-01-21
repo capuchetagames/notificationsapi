@@ -10,7 +10,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 var configuration = new ConfigurationBuilder()
-    .AddJsonFile("appsettings.Development.json").Build();
+    .AddJsonFile("appsettings.json").Build();
 
 var connectionString = configuration.GetConnectionString("DefaultConnection");
 
