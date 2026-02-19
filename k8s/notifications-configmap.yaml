@@ -5,6 +5,6 @@ metadata:
 data:
   DB_HOST: "notifications-db"
   DB_NAME: "Db.Notifications"
-  ASPNETCORE_ENVIRONMENT: "Development"
+  ASPNETCORE_ENVIRONMENT: "Production"
   ACCEPT_EULA: "Y"
   MSSQL_PID: "Developer"
