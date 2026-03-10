@@ -18,7 +18,7 @@ public static class MigrationExtensions
             var retryCount = 10; // Tenta 10 vezes
             var waitTime = TimeSpan.FromSeconds(3); // Espera 3 segundos entre cada tentativa
 
-            for (int i = 0; i < retryCount; i++)
+            for (var i = 0; i < retryCount; i++)
             {
                 try
                 {
