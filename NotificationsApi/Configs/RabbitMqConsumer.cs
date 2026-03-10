@@ -22,7 +22,7 @@ public class RabbitMqConsumer : IRabbitMqConsumer
     {
         var factory = new ConnectionFactory
         {
-            HostName = _settings.Host,
+            HostName = Environment.GetEnvironmentVariable("RABBITMQ_HOST") ?? _settings.Host,
             UserName = _settings.User,
             Password = _settings.Password,
             AutomaticRecoveryEnabled = true
