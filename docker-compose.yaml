@@ -36,13 +36,8 @@
     ports:
       - "5100:8080" 
     environment:
-      ASPNETCORE_ENVIRONMENT: Production
-      ConnectionStrings__DefaultConnection: >
-        Server=notifications-db;
-        Database=Db.Notifications;
-        User Id=sa;
-        Password=rooot1234!!;
-        TrustServerCertificate=True;
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__DefaultConnection: "Server=notifications-db;Database=Db.Notifications;User Id=sa;Password=rooot1234!!;TrustServerCertificate=True;"
       Jwt__Key: IkV6/I+/6WtC4xTRDjLMdwWl0jkt6UAU2R0NUwsL7fI=
     depends_on:
       notifications-db:
@@ -52,7 +47,7 @@
 
 volumes:
   notifications_sql_data:
-
+    
 networks:
   microsservicos-net:
     name: app-network
