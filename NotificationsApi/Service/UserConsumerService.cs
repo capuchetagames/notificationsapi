@@ -10,11 +10,13 @@ public class UserEventsConsumer : BackgroundService
 {
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly IRabbitMqConsumer _consumer;
+    private readonly IConfiguration _configuration;
 
-    public UserEventsConsumer(IRabbitMqConsumer consumer, IServiceScopeFactory scopeFactory)
+    public UserEventsConsumer(IRabbitMqConsumer consumer, IServiceScopeFactory scopeFactory, IConfiguration configuration)
     {
         _consumer = consumer;
         _scopeFactory = scopeFactory;
+        _configuration = configuration;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -29,7 +31,7 @@ public class UserEventsConsumer : BackgroundService
 
         await Task.Delay(Timeout.Infinite, stoppingToken);
     }
-    private Task Handle(UserCreatedEvent userCreatedEvent)
+    private async Task Handle(UserCreatedEvent userCreatedEvent)
     {
         var notificationMessage = new Notifications()
         {
@@ -41,7 +43,20 @@ public class UserEventsConsumer : BackgroundService
             DeliveredAt = DateTime.Now
         };
         
-        Console.WriteLine($"📧 Welcome email para >> {userCreatedEvent.UserId} | {userCreatedEvent.Name} | {userCreatedEvent.Email}");
+            // Acionando a Lambda da AWS (EmailSenderLambda)
+            try
+            {
+                using var httpClient = new HttpClient();
+                var emailPayload = new { UserId = userCreatedEvent.UserId, Name = userCreatedEvent.Name, Email = userCreatedEvent.Email };
+                var jsonContent = new StringContent(System.Text.Json.JsonSerializer.Serialize(emailPayload), System.Text.Encoding.UTF8, "application/json");
+
+                var baseUrl = _configuration["EmailSenderLambda:BaseUrl"];
+                await httpClient.PostAsync($"{baseUrl}/api/emails/welcome", jsonContent);
+            }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Erro ao acionar a API Lambda de E-mail: {ex.Message}");
+        }
 
         using var scope = _scopeFactory.CreateScope();
 
@@ -49,9 +64,6 @@ public class UserEventsConsumer : BackgroundService
             .GetRequiredService<INotificationsRepository>();
         
             repo.Add(notificationMessage);
-
-        
-        return Task.CompletedTask;
     }
 
     public override async Task StopAsync(CancellationToken cancellationToken)
