@@ -2,10 +2,23 @@ using Core.Models;
 using Core.Repository;
 using Infrastructure.Repository;
 using Microsoft.Extensions.Options;
+using NewRelic.LogEnrichers.Serilog;
 using NotificationsApi.Configs;
 using NotificationsApi.Service;
+using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
+
+Log.Logger = new LoggerConfiguration()
+    .Enrich.FromLogContext()
+    .Enrich.WithNewRelicLogsInContext() // método do pacote
+    .WriteTo.File(
+        path: "logs/app.log.json",
+        formatter: new NewRelicFormatter(),
+        rollingInterval: RollingInterval.Day)
+    .CreateLogger();
+
+builder.Host.UseSerilog();
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
