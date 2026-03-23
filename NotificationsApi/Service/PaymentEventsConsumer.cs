@@ -9,11 +9,13 @@ public class PaymentEventsConsumer : BackgroundService
 {
     private readonly IRabbitMqConsumer _consumer;
     private readonly IServiceScopeFactory _scopeFactory;
+    private readonly IConfiguration _configuration;
 
-    public PaymentEventsConsumer(IRabbitMqConsumer consumer, IServiceScopeFactory scopeFactory)
+    public PaymentEventsConsumer(IRabbitMqConsumer consumer, IServiceScopeFactory scopeFactory, IConfiguration configuration)
     {
         _consumer = consumer;
         _scopeFactory = scopeFactory;
+        _configuration = configuration;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -29,10 +31,8 @@ public class PaymentEventsConsumer : BackgroundService
         await Task.Delay(Timeout.Infinite, stoppingToken);
     }
 
-    private Task Handle(PaymentProcessedEvent paymentProcessedEvent)
+    private async Task Handle(PaymentProcessedEvent paymentProcessedEvent)
     {
-        Console.WriteLine($"💳 Mensagem de Status da Compra : {paymentProcessedEvent.Status} | {paymentProcessedEvent.Name} | {paymentProcessedEvent.Email}");
-        
         var notificationMessage = new Notifications()
         {
             UserId = paymentProcessedEvent.UserId,
@@ -49,10 +49,25 @@ public class PaymentEventsConsumer : BackgroundService
 
             repo.Add(notificationMessage);
         
+        // Acionando a Lambda da AWS (EmailSenderLambda) para pagamentos
+        try
+        {
+            using var httpClient = new HttpClient();
+            var emailPayload = new 
+            { 
+                Status = paymentProcessedEvent.Status, 
+                Name = paymentProcessedEvent.Name, 
+                Email = paymentProcessedEvent.Email 
+            };
+            var jsonContent = new StringContent(System.Text.Json.JsonSerializer.Serialize(emailPayload), System.Text.Encoding.UTF8, "application/json");
 
-        Console.WriteLine($"💳 Mensagem de Status da Compra : {paymentProcessedEvent.Status} | {paymentProcessedEvent.Name} | {paymentProcessedEvent.Email}");
-        
-        return Task.CompletedTask;
+            var baseUrl = _configuration["EmailSenderLambda:BaseUrl"];
+            await httpClient.PostAsync($"{baseUrl}/api/emails/payment-status", jsonContent);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Erro ao acionar a API Lambda de E-mail de Pagamento: {ex.Message}");
+        }
     }
     
     public override async Task StopAsync(CancellationToken cancellationToken)
