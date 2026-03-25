@@ -39,16 +39,28 @@ public class PaymentEventsConsumer : BackgroundService
             Message = $"Mensagem de Status da Compra: {paymentProcessedEvent.Status}",
             Subject = "Compra Efetuada",
             Type = "Email",
-            Status = "Sent"
+            Status = "Sent",
+            DeliveredAt =  DateTime.UtcNow
         };
 
-        using var scope = _scopeFactory.CreateScope();
+        try
+        {
+            using var scope = _scopeFactory.CreateScope();
 
-        var repo = scope.ServiceProvider
-            .GetRequiredService<INotificationsRepository>();
+            var repo = scope.ServiceProvider
+                .GetRequiredService<INotificationsRepository>();
 
             repo.Add(notificationMessage);
-        
+        }
+        catch (Exception ex)
+        {
+            
+            Console.WriteLine($"Erro ao salvando info notification no banco: {ex.GetType().Name} - {ex.InnerException?.Message}");
+            throw;
+
+            
+        }
+
         // Acionando a Lambda da AWS (EmailSenderLambda) para pagamentos
         try
         {
@@ -62,7 +74,7 @@ public class PaymentEventsConsumer : BackgroundService
             var jsonContent = new StringContent(System.Text.Json.JsonSerializer.Serialize(emailPayload), System.Text.Encoding.UTF8, "application/json");
 
             var baseUrl = _configuration["EmailSenderLambda:BaseUrl"];
-            await httpClient.PostAsync($"{baseUrl}/api/emails/payment-status", jsonContent);
+            await httpClient.PostAsync($"{baseUrl}/payment-status", jsonContent);
         }
         catch (Exception ex)
         {

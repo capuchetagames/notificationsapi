@@ -51,7 +51,7 @@ public class UserEventsConsumer : BackgroundService
                 var jsonContent = new StringContent(System.Text.Json.JsonSerializer.Serialize(emailPayload), System.Text.Encoding.UTF8, "application/json");
 
                 var baseUrl = _configuration["EmailSenderLambda:BaseUrl"];
-                await httpClient.PostAsync($"{baseUrl}/api/emails/welcome", jsonContent);
+                await httpClient.PostAsync($"{baseUrl}/welcome", jsonContent);
             }
         catch (Exception ex)
         {
