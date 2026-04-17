@@ -71,4 +71,6 @@ app.UseAuthorization();
 
 app.MapControllers();
 
+Console.WriteLine("Notification API is up");
+
 app.Run();

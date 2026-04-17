@@ -10,13 +10,13 @@ public class NotificationsConfiguration : IEntityTypeConfiguration<Notifications
     {
         builder.ToTable("Notifications");
         builder.HasKey(x => x.Id);
-        builder.Property(x => x.Id).HasColumnType("INT").UseIdentityColumn();
-        builder.Property(x => x.UserId).HasColumnType("INT").IsRequired();
+        builder.Property(x => x.Id).HasColumnType("INTEGER").UseIdentityColumn();
+        builder.Property(x => x.UserId).HasColumnType("INTEGER").IsRequired();
         builder.Property(x => x.Subject).HasColumnType("VARCHAR(100)").IsRequired();
         builder.Property(x => x.Message).HasColumnType("VARCHAR(500)").IsRequired();
         builder.Property(x => x.Type).HasColumnType("VARCHAR(100)").IsRequired();
         builder.Property(x => x.Status).HasColumnType("VARCHAR(100)").IsRequired();
-        builder.Property(x=> x.CreatedAt).HasColumnType("DATETIME").IsRequired();
-        builder.Property(x=> x.DeliveredAt).HasColumnType("DATETIME");
+        builder.Property(x=> x.CreatedAt).HasColumnType("TIMESTAMP").IsRequired();
+        builder.Property(x=> x.DeliveredAt).HasColumnType("TIMESTAMP");
     }
 }

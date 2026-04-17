@@ -1,0 +1,33 @@
+﻿services:
+  notifications-db:
+    image: postgres:16
+    container_name: notifications_db_postgres
+    environment:
+      POSTGRES_DB: Db.Notifications
+      POSTGRES_USER: ${PG_USER}
+      POSTGRES_PASSWORD: ${PG_PASSWORD}
+    ports:
+      - "5438:5432"
+    volumes:
+      - notifications_pg_data:/var/lib/postgresql/data
+    networks:
+      - microsservicos-net
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres -d Db.Notifications" ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  notifications-api:
+    depends_on:
+      notifications-db:
+        condition: service_healthy
+    
+
+volumes:
+  notifications_pg_data:
+    
+networks:
+  microsservicos-net:
+    name: app-network
+    driver: bridge
