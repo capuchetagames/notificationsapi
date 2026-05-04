@@ -14,7 +14,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Infrastructure", "Infrastru
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docker", "docker", "{0ABC0B04-B759-4D34-A2F5-A97EC0273810}"
 	ProjectSection(SolutionItems) = preProject
-		docker-compose.yaml = docker-compose.yaml
+		docker-compose.api.yaml = docker-compose.api.yaml
 		Dockerfile = Dockerfile
 		docker-compose.local.yaml = docker-compose.local.yaml
 	EndProjectSection
