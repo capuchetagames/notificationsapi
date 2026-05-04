@@ -1,5 +1,6 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
+using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
@@ -15,15 +16,15 @@ namespace Infrastructure.Migrations
                 name: "Notifications",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "INT", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    UserId = table.Column<int>(type: "INT", nullable: false),
+                    Id = table.Column<int>(type: "INTEGER", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    UserId = table.Column<int>(type: "INTEGER", nullable: false),
                     Message = table.Column<string>(type: "VARCHAR(500)", nullable: false),
                     Subject = table.Column<string>(type: "VARCHAR(100)", nullable: false),
                     Type = table.Column<string>(type: "VARCHAR(100)", nullable: false),
                     Status = table.Column<string>(type: "VARCHAR(100)", nullable: false),
-                    DeliveredAt = table.Column<DateTime>(type: "DATETIME", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "DATETIME", nullable: false)
+                    DeliveredAt = table.Column<DateTime>(type: "TIMESTAMP", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "TIMESTAMP", nullable: false)
                 },
                 constraints: table =>
                 {
