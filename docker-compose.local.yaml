@@ -22,6 +22,8 @@
     depends_on:
       notifications-db:
         condition: service_healthy
+      dynamodb-local:
+        condition: service_started
     
 
 volumes:

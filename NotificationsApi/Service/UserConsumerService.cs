@@ -43,16 +43,16 @@ public class UserEventsConsumer : BackgroundService
             DeliveredAt = DateTime.Now
         };
         
-            // Acionando a Lambda da AWS (EmailSenderLambda)
-            try
-            {
-                using var httpClient = new HttpClient();
-                var emailPayload = new { UserId = userCreatedEvent.UserId, Name = userCreatedEvent.Name, Email = userCreatedEvent.Email };
-                var jsonContent = new StringContent(System.Text.Json.JsonSerializer.Serialize(emailPayload), System.Text.Encoding.UTF8, "application/json");
+        // Acionando a Lambda da AWS (EmailSenderLambda)
+        try
+        {
+            using var httpClient = new HttpClient();
+            var emailPayload = new { UserId = userCreatedEvent.UserId, Name = userCreatedEvent.Name, Email = userCreatedEvent.Email };
+            var jsonContent = new StringContent(System.Text.Json.JsonSerializer.Serialize(emailPayload), System.Text.Encoding.UTF8, "application/json");
 
-                var baseUrl = _configuration["EmailSenderLambda:BaseUrl"];
-                await httpClient.PostAsync($"{baseUrl}/welcome", jsonContent);
-            }
+            var baseUrl = _configuration["EmailSenderLambda:BaseUrl"];
+            await httpClient.PostAsync($"{baseUrl}/welcome", jsonContent);
+        }
         catch (Exception ex)
         {
             Console.WriteLine($"Erro ao acionar a API Lambda de E-mail: {ex.Message}");
