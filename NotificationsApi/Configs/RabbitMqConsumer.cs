@@ -25,10 +25,34 @@ public class RabbitMqConsumer : IRabbitMqConsumer
             HostName = Environment.GetEnvironmentVariable("RABBITMQ_HOST") ?? _settings.Host,
             UserName = _settings.User,
             Password = _settings.Password,
-            AutomaticRecoveryEnabled = true
+            AutomaticRecoveryEnabled = true,
+            NetworkRecoveryInterval = TimeSpan.FromSeconds(10)
         };
+        
+        
+        int[] retryDelays = [5, 10, 20, 30];
+        foreach (var delay in retryDelays)
+        {
+            try
+            {
+                _connection = await factory.CreateConnectionAsync(cancellationToken);
+                break;
+            }
+            catch (Exception ex) when (!cancellationToken.IsCancellationRequested)
+            {
+                Console.WriteLine($"[RabbitMQ] Falha ao conectar, tentando novamente em {delay}s... ({ex.Message})");
+                await Task.Delay(TimeSpan.FromSeconds(delay), cancellationToken);
+            }
+        }
 
-        _connection = await factory.CreateConnectionAsync(cancellationToken);
+        if (_connection is null || !_connection.IsOpen)
+        {
+            throw new InvalidOperationException("[RabbitMQ] Não foi possível estabelecer conexão após todas as tentativas.");
+        }
+            
+        
+        Console.WriteLine($"[RabbitMQ] Conectado com sucesso! ({_connection.Endpoint.HostName}:{_connection.Endpoint.Port})");
+        
         _channel = await _connection.CreateChannelAsync(cancellationToken:cancellationToken);
 
         await _channel.ExchangeDeclareAsync(exchange, ExchangeType.Topic, true, cancellationToken:cancellationToken);

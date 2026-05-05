@@ -10,12 +10,14 @@ public class PaymentEventsConsumer : BackgroundService
     private readonly IRabbitMqConsumer _consumer;
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly IConfiguration _configuration;
+    private readonly ILogger<PaymentEventsConsumer> _logger;
 
-    public PaymentEventsConsumer(IRabbitMqConsumer consumer, IServiceScopeFactory scopeFactory, IConfiguration configuration)
+    public PaymentEventsConsumer(IRabbitMqConsumer consumer, IServiceScopeFactory scopeFactory, IConfiguration configuration, ILogger<PaymentEventsConsumer> logger)
     {
         _consumer = consumer;
         _scopeFactory = scopeFactory;
         _configuration = configuration;
+        _logger = logger;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -47,18 +49,13 @@ public class PaymentEventsConsumer : BackgroundService
         {
             using var scope = _scopeFactory.CreateScope();
 
-            var repo = scope.ServiceProvider
-                .GetRequiredService<INotificationsRepository>();
-
-            repo.Add(notificationMessage);
+            var repo = scope.ServiceProvider.GetRequiredService<INotificationsRepository>();
+                repo.Add(notificationMessage);
         }
         catch (Exception ex)
         {
-            
-            Console.WriteLine($"Erro ao salvando info notification no banco: {ex.GetType().Name} - {ex.InnerException?.Message}");
+            _logger.LogError(ex, $"Erro salvando info notification no banco: {ex.GetType().Name} - {ex.InnerException?.Message}");
             throw;
-
-            
         }
 
         // Acionando a Lambda da AWS (EmailSenderLambda) para pagamentos
@@ -78,7 +75,7 @@ public class PaymentEventsConsumer : BackgroundService
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Erro ao acionar a API Lambda de E-mail de Pagamento: {ex.Message}");
+            _logger.LogError(ex,$"Erro ao acionar a API Lambda de E-mail de Pagamento: {ex.Message}");
         }
     }
     
