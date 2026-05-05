@@ -11,12 +11,14 @@ public class UserEventsConsumer : BackgroundService
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly IRabbitMqConsumer _consumer;
     private readonly IConfiguration _configuration;
+    private readonly ILogger<UserEventsConsumer> _logger;
 
-    public UserEventsConsumer(IRabbitMqConsumer consumer, IServiceScopeFactory scopeFactory, IConfiguration configuration)
+    public UserEventsConsumer(IRabbitMqConsumer consumer, IServiceScopeFactory scopeFactory, IConfiguration configuration, ILogger<UserEventsConsumer> logger)
     {
         _consumer = consumer;
         _scopeFactory = scopeFactory;
         _configuration = configuration;
+        _logger = logger;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -55,14 +57,12 @@ public class UserEventsConsumer : BackgroundService
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Erro ao acionar a API Lambda de E-mail: {ex.Message}");
+            _logger.LogError(ex, $"Erro ao acionar a API Lambda de E-mail: {ex.Message}");
         }
 
         using var scope = _scopeFactory.CreateScope();
 
-        var repo = scope.ServiceProvider
-            .GetRequiredService<INotificationsRepository>();
-        
+        var repo = scope.ServiceProvider.GetRequiredService<INotificationsRepository>();
             repo.Add(notificationMessage);
     }
 
