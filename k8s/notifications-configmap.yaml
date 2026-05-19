@@ -8,3 +8,6 @@ data:
   ASPNETCORE_URLS: "http://+:8080"
   RABBITMQ_HOST: "rabbitmq"
   EmailSenderLambda__BaseUrl: "https://copwct7owsabhq2udy4ru2m4jy0eidod.lambda-url.us-east-2.on.aws/"
+  DynamoDb__LogTableName: "notifications-logs"
+  DynamoDb__UseLocal: "false"
+  DynamoDb__Region: "us-east-2"
