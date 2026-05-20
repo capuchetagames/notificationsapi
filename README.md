@@ -1,180 +1,147 @@
 # NotificationsAPI
 
-API de notificações responsável pelo envio de e-mails de boas-vindas e confirmação de compra, orientada a eventos via RabbitMQ.
+API de notificações responsável pelo envio de e-mails de boas-vindas e status de pagamento, orientada a eventos via RabbitMQ.
 
-## 📋 Sobre o Projeto
+## Sobre o Projeto
 
-Este serviço faz parte de um sistema de microsserviços e é responsável por gerenciar o envio de notificações por e-mail. O serviço consome eventos de filas RabbitMQ, persiste as notificações em um banco SQL Server e aciona a **EmailSenderLambda** (AWS Lambda) para o envio real dos e-mails.
+Este serviço faz parte de um sistema de microsserviços e é responsável por:
+
+- Consumir eventos no RabbitMQ
+- Persistir notificações no PostgreSQL (via EF Core)
+- Acionar a **EmailSenderLambda** para envio real dos e-mails
+- Registrar logs estruturados em tabela DynamoDB
 
 ### Fluxo de funcionamento
 
-```
+```text
 [Outro microsserviço] --> RabbitMQ --> [NotificationsAPI] --> EmailSenderLambda (AWS Lambda)
                                               |
-                                         SQL Server
-                                    (persiste notificações)
+                                         PostgreSQL
+                                          (histórico)
+                                              |
+                                           DynamoDB
+                                            (logs)
 ```
 
 - **Evento `user.*`** (exchange `users.events`, fila `notifications.users`): dispara e-mail de boas-vindas.
-- **Evento `payment.approved`** (exchange `payments.events`, fila `notifications.payments`): dispara e-mail de status da compra.
+- **Evento `payment.approved`** (exchange `payments.events`, fila `notifications.payments`): dispara e-mail de status de pagamento.
 
-## 🚀 Tecnologias Utilizadas
+## Tecnologias Utilizadas
 
-- **.NET 8.0** - Framework principal
-- **ASP.NET Core** - Para construção da API RESTful
-- **C#** - Linguagem de programação
-- **RabbitMQ** (`RabbitMQ.Client 7.x`) - Mensageria e consumo de eventos
-- **Entity Framework Core 8** - ORM com SQL Server e Lazy Loading
-- **SQL Server 2022** - Banco de dados relacional
-- **Serilog** + **New Relic Log Enricher** - Logging estruturado com integração ao New Relic
-- **FluentValidation** - Validação de modelos
-- **Swagger / ReDoc** - Documentação interativa da API
-- **Docker** - Containerização da aplicação
-- **Docker Compose** - Orquestração local com SQL Server
-- **Kubernetes** - Orquestração de containers em produção
-- **xUnit** - Framework de testes unitários
+- **.NET 8.0 / ASP.NET Core**
+- **C#**
+- **RabbitMQ** (`RabbitMQ.Client 7.2.0`)
+- **Entity Framework Core 8** + **Npgsql**
+- **PostgreSQL 16**
+- **AWS DynamoDB** (logging)
+- **Swashbuckle** (Swagger + ReDoc)
+- **Docker / Docker Compose**
+- **Kubernetes**
 
-## 📁 Estrutura do Projeto
+## Estrutura do Projeto
 
-```
+```text
 notificationsapi/
-├── Core/                          # Lógica de negócio e modelos de domínio
-│   ├── Dtos/                      # Eventos recebidos (UserCreatedEvent, PaymentProcessedEvent)
-│   ├── Entity/                    # Entidades do domínio (Notifications)
-│   ├── Models/                    # Interfaces de serviços (IRabbitMqConsumer, etc.)
-│   └── Repository/                # Interfaces de repositório
-├── Infrastructure/                # Implementação de infraestrutura
-│   ├── Migrations/                # Migrations do Entity Framework Core
-│   └── Repository/                # ApplicationDbContext e repositórios EF
-├── NotificationsApi/              # Projeto principal da API
-│   ├── Configs/                   # RabbitMqConsumer e RabbitMqSettings
-│   ├── Controllers/               # Controladores da API
-│   └── Service/                   # Background Services (UserEventsConsumer, PaymentEventsConsumer)
-├── NotificationsApi.Tests/        # Testes unitários
-├── docker-compose.yaml            # Compose com API + SQL Server
-└── k8s/                           # Arquivos de deployment do Kubernetes
+├── Core/                      # Entidades, DTOs, contratos e regras centrais
+├── Infrastructure/            # DbContext, migrations e infraestrutura de dados
+├── NotificationsApi/          # API, middlewares, consumidores e configs
+├── NotificationsApi.Tests/    # Projeto de testes
+├── docker-compose.api.yaml    # Compose da API
+├── docker-compose.local.yaml  # Compose local (PostgreSQL + dependências de execução)
+└── k8s/                       # Manifests e scripts Kubernetes
 ```
 
-## 🔧 Pré-requisitos
+## Pré-requisitos
 
-- [.NET 8.0 SDK](https://dotnet.microsoft.com/download/dotnet/8.0)
-- [Docker](https://www.docker.com/get-started) e [Docker Compose](https://docs.docker.com/compose/install/) — para SQL Server e RabbitMQ locais
-- Instância do **RabbitMQ** acessível (pode ser local ou via rede compartilhada de microsserviços)
+- [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0)
+- [Docker](https://www.docker.com/get-started) + Docker Compose
+- RabbitMQ acessível na rede da aplicação
+- DynamoDB (AWS ou local, conforme configuração)
 
-## ⚙️ Configuração
+## Configuração
 
-As configurações da aplicação encontram-se em:
+Use os arquivos:
 
-- `appsettings.json` - Configurações gerais
-- `appsettings.Development.json` - Configurações específicas para desenvolvimento
+- `NotificationsApi/appsettings.json`
+- `NotificationsApi/appsettings.Development.json`
+- `.env.example`
 
-### Variáveis de ambiente relevantes
+### Variáveis de ambiente principais
 
 | Variável | Descrição |
 |---|---|
-| `ConnectionStrings__DefaultConnection` | String de conexão com o SQL Server |
-| `RABBITMQ_HOST` | Host do RabbitMQ (sobrescreve `RabbitMq:Host`) |
-| `EmailSenderLambda__BaseUrl` | URL base da AWS Lambda responsável pelo envio de e-mails |
-| `Jwt__Key` | Chave JWT para autenticação |
+| `ConnectionStrings__DefaultConnection` / `DB_CONNECTION_STRING` | Conexão com PostgreSQL |
+| `RABBITMQ_HOST` | Host do RabbitMQ |
+| `EmailSenderLambda__BaseUrl` | URL base da Lambda de e-mail |
+| `DynamoDb__LogTableName` | Nome da tabela de logs no DynamoDB |
+| `DynamoDb__UseLocal` | Define uso de DynamoDB local |
+| `DynamoDb__LocalUrl` | URL do DynamoDB local |
+| `AWS_DEFAULT_REGION` | Região AWS usada pelo DynamoDB |
+| `Jwt__Key` | Chave JWT |
 
-Exemplo de configuração no `appsettings.json`:
+## Como Executar
 
-```json
-{
-  "RabbitMq": {
-    "Host": "localhost",
-    "User": "guest",
-    "Password": "guest"
-  },
-  "EmailSenderLambda": {
-    "BaseUrl": "https://<lambda-url>"
-  },
-  "ConnectionStrings": {
-    "DefaultConnection": "Server=localhost,1435;Database=Db.Notifications;User Id=sa;Password=rooot1234!!;TrustServerCertificate=True;"
-  }
-}
-```
+### 1) Executando localmente (app via `dotnet run`)
 
-## 🏃 Como Executar
-
-### Executando Localmente
-
-1. Clone o repositório:
-```bash
-git clone https://github.com/capuchetagames/notificationsapi.git
-cd notificationsapi
-```
-
-2. Suba o SQL Server localmente (via Docker Compose):
-```bash
-docker-compose up notifications-db -d
-```
-
-3. Restaure as dependências:
-```bash
-dotnet restore
-```
-
-4. Execute a aplicação (as migrations são aplicadas automaticamente no ambiente Development):
-```bash
-dotnet run --project NotificationsApi
-```
-
-A API estará disponível em `http://localhost:5100`.
-
-### Executando com Docker Compose
-
-Sobe a API junto com o SQL Server em rede compartilhada (`app-network`):
+1. Suba o PostgreSQL local:
 
 ```bash
-docker-compose up
+docker compose -f docker-compose.local.yaml up -d notifications-db
 ```
 
-A API estará disponível em `http://localhost:5100`.
+2. Restaure e execute a API:
 
-> **Nota:** O RabbitMQ deve estar disponível na rede `app-network` com o hostname `rabbitmq` (ou configure a variável `RABBITMQ_HOST`).
+```bash
+dotnet restore NotificationsApi.sln
+dotnet run --project NotificationsApi/NotificationsApi.csproj
+```
 
-### Executando com Docker (imagem isolada)
+API disponível em `http://localhost:5100`.
 
-1. Construa a imagem Docker:
+> Observação: RabbitMQ e DynamoDB precisam estar acessíveis conforme suas configurações locais.
+
+### 2) Executando com Docker Compose (API)
+
+```bash
+docker compose -f docker-compose.api.yaml up -d --build
+```
+
+API disponível em `http://localhost:5100`.
+
+> Para execução completa local, combine os arquivos conforme necessidade do ambiente (API + banco + serviços externos).
+
+### 3) Executando com Docker (imagem isolada)
+
 ```bash
 docker build -t notificationsapi .
-```
-
-2. Execute o container:
-```bash
 docker run -p 5100:8080 notificationsapi
 ```
 
-## 📬 Endpoints da API
+## Endpoints
 
 | Método | Rota | Descrição |
 |---|---|---|
 | `GET` | `/health` | Health check da aplicação |
-| `GET` | `/swagger` | Documentação Swagger (apenas em Development) |
-| `GET` | `/api-docs` | Documentação ReDoc (apenas em Development) |
+| `GET` | `/swagger` | Swagger UI (Development) |
+| `GET` | `/api-docs` | ReDoc (Development) |
 
-### Consumidores de eventos (Background Services)
+## Consumidores de eventos (Background Services)
 
 | Serviço | Exchange | Fila | Routing Key | Ação |
 |---|---|---|---|---|
-| `UserEventsConsumer` | `users.events` | `notifications.users` | `user.*` | Envia e-mail de boas-vindas via EmailSenderLambda (`POST /api/emails/welcome`) |
-| `PaymentEventsConsumer` | `payments.events` | `notifications.payments` | `payment.approved` | Envia e-mail de status da compra via EmailSenderLambda (`POST /api/emails/payment-status`) |
+| `UserEventsConsumer` | `users.events` | `notifications.users` | `user.*` | Chama Lambda `POST /welcome` |
+| `PaymentEventsConsumer` | `payments.events` | `notifications.payments` | `payment.approved` | Chama Lambda `POST /payment-status` |
 
-## 📊 Observabilidade
+## Observabilidade
 
-A aplicação utiliza **Serilog** com o enriquecedor do **New Relic** para logs estruturados no formato JSON, gravados em `logs/app.log.json` (com rotação diária). Os logs são compatíveis com o ingestion do New Relic Logs.
+A API utiliza logging via `ILogger` com provider customizado para DynamoDB e middleware de correlação de requisições.
 
-## 🐳 Deploy com Kubernetes
+## Deploy com Kubernetes
 
-Os arquivos de configuração do Kubernetes estão disponíveis no diretório `k8s/`. Para fazer o deploy:
+Os manifestos e scripts estão no diretório `k8s/`.
+
+Exemplo:
 
 ```bash
 kubectl apply -f k8s/
 ```
-
-Scripts auxiliares disponíveis em `k8s/`:
-
-- `k8s-start-all-deploy.sh` — Sobe todos os recursos em modo deploy
-- `k8s-start-all-dev.sh` — Sobe todos os recursos em modo dev
-- `k8s-delete-all.sh` — Remove todos os recursos do cluster
